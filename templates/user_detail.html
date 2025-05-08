@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+
+{% block title %}User Details{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="content-title">User Details</h1>
+        <div class="btn-group">
+            <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit User
+            </a>
+            <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <h5 class="card-title mb-0">Basic Information</h5>
+                    <span class="ms-auto badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ 'Active' if user.is_active else 'Inactive' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <table class="table table-details">
+                        <tbody>
+                            <tr>
+                                <th width="30%">Username</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Role</th>
+                                <td>
+                                    <span class="badge {% if user.role == 'admin' %}bg-purple{% elif user.role == 'org_admin' %}bg-primary{% elif user.role == 'user' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ user.email or 'Not specified' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    {% if user.is_active %}
+                                    <span class="text-success">
+                                        <i class="fas fa-check-circle me-1"></i> Active
+                                    </span>
+                                    {% else %}
+                                    <span class="text-danger">
+                                        <i class="fas fa-times-circle me-1"></i> Inactive
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Organization Details</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-details">
+                        <tbody>
+                            <tr>
+                                <th width="30%">Organization</th>
+                                <td>{{ user.organization.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Organization ID</th>
+                                <td>{{ user.organization_id }}</td>
+                            </tr>
+                            {% if user.organization.description %}
+                            <tr>
+                                <th>Description</th>
+                                <td>{{ user.organization.description }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if user.organization.website %}
+                            <tr>
+                                <th>Website</th>
+                                <td>
+                                    <a href="{{ user.organization.website }}" target="_blank">{{ user.organization.website }}</a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="info-card">
+                                <div class="info-label">Created At</div>
+                                <div class="info-value">{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card">
+                                <div class="info-label">Last Updated</div>
+                                <div class="info-value">{{ user.updated_at.strftime('%Y-%m-%d %H:%M') if user.updated_at else 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card">
+                                <div class="info-label">Last Login</div>
+                                <div class="info-value">{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-3">
+        <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
+        <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit User
+        </a>
+    </div>
+</div>
+
+<style>
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .content-title {
+        margin-bottom: 0;
+    }
+    .bg-purple {
+        background-color: #8B5CF6;
+    }
+    .table-details th {
+        font-weight: 600;
+        color: #6B7280;
+    }
+    .info-card {
+        padding: 1rem;
+        background-color: #F9FAFB;
+        border-radius: 0.5rem;
+        height: 100%;
+    }
+    .info-label {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+    }
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

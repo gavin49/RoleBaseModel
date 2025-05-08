@@ -1,0 +1,223 @@
+/* Button Base Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.5;
+    border-radius: 0.375rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 59, 130, 246), 0.25);
+}
+
+/* Button Sizes */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    border-radius: 0.25rem;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.0625rem;
+    border-radius: 0.5rem;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--org-primary-color, var(--primary-color));
+    color: white;
+    border-color: var(--org-primary-color, var(--primary-color));
+}
+
+.btn-primary:hover {
+    background-color: color-mix(in srgb, var(--org-primary-color, var(--primary-color)) 80%, black);
+    border-color: color-mix(in srgb, var(--org-primary-color, var(--primary-color)) 80%, black);
+}
+
+.btn-secondary {
+    background-color: var(--org-secondary-color, var(--secondary-color));
+    color: white;
+    border-color: var(--org-secondary-color, var(--secondary-color));
+}
+
+.btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--org-secondary-color, var(--secondary-color)) 80%, black);
+    border-color: color-mix(in srgb, var(--org-secondary-color, var(--secondary-color)) 80%, black);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--org-primary-color, var(--primary-color));
+    border-color: var(--org-primary-color, var(--primary-color));
+}
+
+.btn-outline:hover {
+    background-color: var(--org-primary-color, var(--primary-color));
+    color: white;
+}
+
+.btn-outline-secondary {
+    background-color: transparent;
+    color: var(--org-secondary-color, var(--secondary-color));
+    border-color: var(--org-secondary-color, var(--secondary-color));
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--org-secondary-color, var(--secondary-color));
+    color: white;
+}
+
+/* Ghost Button (transparent with hover effect) */
+.btn-ghost {
+    background-color: transparent;
+    color: var(--text-primary);
+    border-color: transparent;
+}
+
+.btn-ghost:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Button States */
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+/* Button with Icon */
+.btn i {
+    margin-right: 0.5rem;
+    font-size: 1em;
+}
+
+.btn.icon-right i {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+.btn.icon-only {
+    padding: 0.625rem;
+}
+
+.btn.icon-only i {
+    margin: 0;
+}
+
+/* Button Group */
+.btn-group {
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.btn-group .btn {
+    position: relative;
+    flex: 1 1 auto;
+}
+
+.btn-group .btn:not(:first-child) {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.btn-group .btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Block Button */
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Special Buttons */
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: color-mix(in srgb, var(--success-color) 80%, black);
+    border-color: color-mix(in srgb, var(--success-color) 80%, black);
+}
+
+.btn-danger {
+    background-color: var(--error-color);
+    border-color: var(--error-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: color-mix(in srgb, var(--error-color) 80%, black);
+    border-color: color-mix(in srgb, var(--error-color) 80%, black);
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: color-mix(in srgb, var(--warning-color) 80%, black);
+    border-color: color-mix(in srgb, var(--warning-color) 80%, black);
+}
+
+/* Action Buttons (e.g. for tables or cards) */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    color: var(--text-primary);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.action-btn.danger:hover {
+    color: var(--error-color);
+}
+
+/* Form action buttons */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .btn-ghost:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .action-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}

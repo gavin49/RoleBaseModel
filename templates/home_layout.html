@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block auth_content %}
+    {% block home_content %}{% endblock %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% block home_extra_css %}{% endblock %}
+{% endblock %}

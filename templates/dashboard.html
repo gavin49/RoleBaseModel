@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - AChecker{% endblock %}
+
+{% block content %}
+    <!-- Dashboard Overview -->
+    <section class="dashboard-overview">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Organization</h3>
+                <p class="stat-value">{{ current_user.organization.name }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Role</h3>
+                <p class="stat-value">{{ current_user.role }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Status</h3>
+                <p class="stat-value"><span class="status-badge active">Active</span></p>
+            </div>
+            
+            {% if current_user.role == 'admin' %}
+            <!-- Main Admin can see all stats -->
+            <div class="stat-card">
+                <h3>Total Organizations</h3>
+                <p class="stat-value">{{ organization_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <p class="stat-value">{{ user_count }}</p>
+            </div>
+            {% else %}
+            <!-- Org Admin can only see their org's user count -->
+            <div class="stat-card">
+                <h3>Organization Users</h3>
+                <p class="stat-value">{{ org_user_count }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Organization Data -->
+    <section class="org-data">
+        <!-- Update action buttons -->
+        <div class="section-header">
+            <h2>Organization Data</h2>
+            <button class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add New
+            </button>
+        </div>
+
+        <div class="data-grid">
+            {% for data in organization_data %}
+            <div class="data-card">
+                <div class="data-content">
+                    {{ data.content }}
+                </div>
+                <!-- For data actions -->
+                <div class="data-actions">
+                    <button class="btn btn-outline btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

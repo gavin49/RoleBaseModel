@@ -1,0 +1,144 @@
+home.html
+{% extends "home_layout.html" %}
+
+{% block title %}AChecker - Access Management System{% endblock %}
+
+{% block home_content %}
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="{{ url_for('home') }}">
+                        {% if organization and organization.logo_url %}
+                            <img src="{{ organization.logo_url }}" alt="{{ organization.name }}">
+                        {% else %}
+                            <i class="fas fa-shield-alt"></i> AChecker
+                        {% endif %}
+                    </a>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="auth-buttons">
+                    {% if current_user.is_authenticated %}
+                        <div class="user-menu">
+                            <button class="user-dropdown-btn">
+                                <i class="fas fa-user-circle"></i>
+                                <span>{{ current_user.username }}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="user-dropdown">
+                                <a href="{{ url_for('dashboard') }}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                                <a href="{{ url_for('organization_settings') }}">
+                                    <i class="fas fa-cog"></i> Settings
+                                </a>
+                                <hr>
+                                <a href="{{ url_for('logout') }}" class="logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <!-- Hero content from previous implementation -->
+        <div class="container">
+            <div class="hero-content">
+                <h1>Secure Access Control for Organizations</h1>
+                <p>Manage user access, monitor activity, and ensure security across your organization with AChecker.</p>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Get Started</a>
+                    <a href="#features" class="btn btn-outline btn-lg">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="{{ url_for('static', filename='img/hero-illustration.svg') }}" alt="AChecker Dashboard">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <!-- Features content from previous implementation -->
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful Features</h2>
+                <p>Everything you need to manage and secure your organization</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Role-Based Access</h3>
+                    <p>Assign specific roles to users with customized permissions and access rights.</p>
+                </div>
+                <!-- Additional features... -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About and Contact sections... -->
+    <!-- Continue with other sections from the previous implementation -->
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <!-- Footer content from previous implementation -->
+    </footer>
+{% endblock %}
+
+{% block home_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // User dropdown functionality
+        const userDropdownBtn = document.querySelector('.user-dropdown-btn');
+        const userDropdown = document.querySelector('.user-dropdown');
+        
+        if (userDropdownBtn) {
+            userDropdownBtn.addEventListener('click', function() {
+                userDropdown.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!userDropdownBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

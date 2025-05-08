@@ -1,0 +1,498 @@
+{% extends "layout.html" %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="content-title">User Management</h1>
+        {% if current_user.can_manage_users() %}
+        <a href="{{ url_for('new_user') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Add New User
+        </a>
+        {% endif %}
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <!-- Update the search and filter area -->
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search by username or role...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-md-end mt-3 mt-md-0 gap-3">
+                        <select id="roleFilter" class="form-select" style="max-width: 180px;">
+                            <option value="">All Roles</option>
+                            {% if current_user.is_admin() %}
+                            <option value="admin">Administrator</option>
+                            {% endif %}
+                            <option value="org_admin">Organization Admin</option>
+                            <option value="user">Regular User</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        
+                        <select id="sortUsers" class="form-select" style="max-width: 180px;">
+                            <option value="username-asc">Username (A-Z)</option>
+                            <option value="username-desc">Username (Z-A)</option>
+                            <option value="role">By Role</option>
+                            {% if current_user.is_admin() %}
+                            <option value="organization">By Organization</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bulk-actions px-3 py-2 bg-light border-bottom d-none">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="selected-count">0</span> users selected
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-success batch-action" data-action="activate">
+                        <i class="fas fa-user-check"></i> Activate
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger batch-action" data-action="deactivate">
+                        <i class="fas fa-user-slash"></i> Deactivate
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary batch-cancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            {% if current_user.is_admin() %}
+                            <th>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                </div>
+                            </th>
+                            {% endif %}
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Organization</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% for user in users %}
+                        <tr class="user-row" data-username="{{ user.username|lower }}" data-role="{{ user.role }}" data-org="{{ user.organization.name|lower }}" data-user-id="{{ user.id }}">
+                            {% if current_user.is_admin() %}
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input user-select" type="checkbox" value="{{ user.id }}"
+                                        {% if user.id == current_user.id %}disabled{% endif %}>
+                                </div>
+                            </td>
+                            {% endif %}
+                            <td>{{ user.username }}</td>
+                            <td>
+                                <span class="badge {% if user.role == 'admin' %}bg-purple{% elif user.role == 'org_admin' %}bg-primary{% elif user.role == 'user' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td>{{ user.organization.name }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('view_user', user_id=user.id) }}" class="btn btn-sm btn-outline-secondary" title="View User">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary" title="Edit User">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if user.id != current_user.id %}
+                                    <button type="button" class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} toggle-status" 
+                                            data-user-id="{{ user.id }}" title="{{ 'Deactivate' if user.is_active else 'Activate' }} User">
+                                        <i class="fas fa-{% if user.is_active %}user-slash{% else %}user-check{% endif %}"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="You cannot deactivate your own account">
+                                        <i class="fas fa-user-shield"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if users|length == 0 %}
+            <div class="text-center py-5">
+                <div class="text-muted mb-3">
+                    <i class="fas fa-users fa-3x"></i>
+                </div>
+                <h5>No users found</h5>
+                <p class="text-muted">Create your first user by clicking the "Add New User" button.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+    .bg-purple {
+        background-color: #8B5CF6;
+    }
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .content-title {
+        margin-bottom: 0;
+    }
+    .table th {
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    /* Role-specific colors */
+    .badge-admin {
+        background-color: #8B5CF6;
+        color: white;
+    }
+    
+    .badge-org_admin {
+        background-color: #3B82F6;
+        color: white;
+    }
+    
+    .badge-user {
+        background-color: #10B981;
+        color: white;
+    }
+    
+    .badge-disabled {
+        background-color: #6B7280;
+        color: white;
+    }
+    
+    /* Make sure the table rows have proper hover effect */
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--org-primary-color-rgb, 59, 130, 246), 0.05);
+    }
+    
+    /* Style for the bulk actions bar */
+    .bulk-actions {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    /* Checkbox styling */
+    .form-check-input:checked {
+        background-color: var(--org-primary-color);
+        border-color: var(--org-primary-color);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search and filter functionality
+    const searchInput = document.getElementById('searchInput');
+    const roleFilter = document.getElementById('roleFilter');
+    const userRows = Array.from(document.querySelectorAll('.user-row'));
+    const tableBody = document.getElementById('usersTableBody');
+    
+    function filterUsers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const roleValue = roleFilter.value.toLowerCase();
+        
+        userRows.forEach(row => {
+            const username = row.getAttribute('data-username');
+            const role = row.getAttribute('data-role');
+            
+            const matchesSearch = username.includes(searchTerm);
+            const matchesRole = !roleValue || role === roleValue;
+            
+            row.style.display = matchesSearch && matchesRole ? '' : 'none';
+        });
+    }
+    
+    searchInput.addEventListener('input', filterUsers);
+    roleFilter.addEventListener('change', filterUsers);
+    
+    // Add sorting functionality
+    const sortSelect = document.getElementById('sortUsers');
+    
+    sortSelect.addEventListener('change', function() {
+        const sortValue = this.value;
+        
+        userRows.sort(function(a, b) {
+            if (sortValue === 'username-asc') {
+                return a.getAttribute('data-username').localeCompare(b.getAttribute('data-username'));
+            } else if (sortValue === 'username-desc') {
+                return b.getAttribute('data-username').localeCompare(a.getAttribute('data-username'));
+            } else if (sortValue === 'role') {
+                return a.getAttribute('data-role').localeCompare(b.getAttribute('data-role'));
+            } else if (sortValue === 'organization') {
+                return a.getAttribute('data-org').localeCompare(b.getAttribute('data-org'));
+            }
+            return 0;
+        });
+        
+        // Remove existing rows
+        while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+        }
+        
+        // Add sorted rows
+        userRows.forEach(row => {
+            tableBody.appendChild(row);
+        });
+        
+        // Apply current search/filter
+        filterUsers();
+    });
+    
+    // Toggle user status
+    const toggleButtons = document.querySelectorAll('.toggle-status');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            
+            if (confirm('Are you sure you want to change this user\'s status?')) {
+                fetch(`/users/${userId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update UI
+                        const row = this.closest('tr');
+                        const statusCell = row.querySelector('td:nth-child(4) .badge');
+                        
+                        if (data.status === 'active') {
+                            statusCell.textContent = 'Active';
+                            statusCell.className = 'badge bg-success';
+                            this.innerHTML = '<i class="fas fa-user-slash"></i>';
+                            this.title = 'Deactivate User';
+                            this.className = this.className.replace('btn-outline-success', 'btn-outline-danger');
+                        } else {
+                            statusCell.textContent = 'Inactive';
+                            statusCell.className = 'badge bg-danger';
+                            this.innerHTML = '<i class="fas fa-user-check"></i>';
+                            this.title = 'Activate User';
+                            this.className = this.className.replace('btn-outline-danger', 'btn-outline-success');
+                        }
+                        
+                        // Show alert
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = `
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        document.querySelector('.content-header').insertAdjacentElement('afterend', alertDiv);
+                        
+                        // Auto-dismiss alert after 3 seconds
+                        setTimeout(() => {
+                            alertDiv.classList.remove('show');
+                            setTimeout(() => alertDiv.remove(), 150);
+                        }, 3000);
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+
+    // Batch operations functionality
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const userCheckboxes = document.querySelectorAll('.user-select');
+    const bulkActionsBar = document.querySelector('.bulk-actions');
+    const selectedCountSpan = document.querySelector('.selected-count');
+    const batchButtons = document.querySelectorAll('.batch-action');
+    const cancelBatchButton = document.querySelector('.batch-cancel');
+
+    // Select all functionality
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            
+            userCheckboxes.forEach(checkbox => {
+                if (!checkbox.disabled) {
+                    checkbox.checked = isChecked;
+                }
+            });
+            
+            updateBulkActionsBar();
+        });
+    }
+
+    // Individual checkbox functionality
+    userCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateBulkActionsBar();
+            
+            // Update "select all" checkbox state
+            if (selectAllCheckbox) {
+                const allChecked = [...userCheckboxes].filter(cb => !cb.disabled).every(cb => cb.checked);
+                const someChecked = [...userCheckboxes].filter(cb => !cb.disabled).some(cb => cb.checked);
+                
+                selectAllCheckbox.checked = allChecked;
+                selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            }
+        });
+    });
+
+    // Cancel batch selection
+    if (cancelBatchButton) {
+        cancelBatchButton.addEventListener('click', function() {
+            userCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+            
+            bulkActionsBar.classList.add('d-none');
+        });
+    }
+
+    // Handle batch actions
+    batchButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('data-action');
+            const selectedIds = [...userCheckboxes]
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (selectedIds.length === 0) return;
+            
+            // Confirm the action
+            const actionText = action === 'activate' ? 'activate' : 'deactivate';
+            if (confirm(`Are you sure you want to ${actionText} ${selectedIds.length} users?`)) {
+                // Send request to process batch action
+                fetch('/users/batch-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        user_ids: selectedIds
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update UI for each affected user
+                        selectedIds.forEach(userId => {
+                            const row = document.querySelector(`.user-row[data-user-id="${userId}"]`);
+                            if (row) {
+                                const statusCell = row.querySelector('td:nth-child(5) .badge');
+                                const actionBtn = row.querySelector('.toggle-status');
+                                
+                                if (action === 'activate') {
+                                    statusCell.textContent = 'Active';
+                                    statusCell.className = 'badge bg-success';
+                                    if (actionBtn) {
+                                        actionBtn.innerHTML = '<i class="fas fa-user-slash"></i>';
+                                        actionBtn.title = 'Deactivate User';
+                                        actionBtn.className = actionBtn.className.replace('btn-outline-success', 'btn-outline-danger');
+                                    }
+                                } else {
+                                    statusCell.textContent = 'Inactive';
+                                    statusCell.className = 'badge bg-danger';
+                                    if (actionBtn) {
+                                        actionBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+                                        actionBtn.title = 'Activate User';
+                                        actionBtn.className = actionBtn.className.replace('btn-outline-danger', 'btn-outline-success');
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // Reset selection
+                        cancelBatchButton.click();
+                        
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = `
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        document.querySelector('.content-header').insertAdjacentElement('afterend', alertDiv);
+                        
+                        // Auto-dismiss alert
+                        setTimeout(() => {
+                            alertDiv.classList.remove('show');
+                            setTimeout(() => alertDiv.remove(), 150);
+                        }, 3000);
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        });
+    });
+
+    // Update bulk actions bar visibility
+    function updateBulkActionsBar() {
+        const selectedCount = [...userCheckboxes].filter(cb => cb.checked).length;
+        
+        if (selectedCount > 0) {
+            bulkActionsBar.classList.remove('d-none');
+            selectedCountSpan.textContent = selectedCount;
+        } else {
+            bulkActionsBar.classList.add('d-none');
+        }
+    }
+});
+</script>
+{% endblock %}
